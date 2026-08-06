@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local audit output and scratch work
+audits/
+*-workspace/
+*.local.json
+out/
+
+# Never commit
+.env
+*.key

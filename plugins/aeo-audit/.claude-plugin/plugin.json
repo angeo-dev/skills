@@ -1,0 +1,12 @@
+{
+  "name": "aeo-audit",
+  "description": "Audit any site for AI crawler access, llms.txt, structured data, and citation signals",
+  "version": "0.1.0",
+  "author": {
+    "name": "Ievgenii Gryshkun",
+    "url": "https://angeo.dev"
+  },
+  "homepage": "https://angeo.dev/",
+  "repository": "https://github.com/angeo-dev/skills",
+  "license": "MIT"
+}
