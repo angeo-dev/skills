@@ -30,18 +30,29 @@ Documented AI-related user-agents worth reporting on, grouped by what they do:
 
 | Agent | Operator | Purpose |
 |---|---|---|
-| `GPTBot` | OpenAI | Crawling for ChatGPT and training |
-| `OAI-SearchBot` | OpenAI | Search index for ChatGPT |
+| `GPTBot` | OpenAI | Crawling for training |
+| `OAI-SearchBot` | OpenAI | Search index for ChatGPT search |
 | `ChatGPT-User` | OpenAI | Live fetch when a user asks about a URL |
-| `ClaudeBot` | Anthropic | Crawling for Claude |
+| `ClaudeBot` | Anthropic | Crawling for training |
+| `Claude-SearchBot` | Anthropic | Search index for Claude |
 | `Claude-User` | Anthropic | Live fetch on user request |
-| `Claude-SearchBot` | Anthropic | Search index |
-| `PerplexityBot` | Perplexity | Index |
-| `Perplexity-User` | Perplexity | Live fetch |
-| `Google-Extended` | Google | Gemini / AI Overviews opt-out control |
-| `Applebot-Extended` | Apple | Apple Intelligence opt-out control |
-| `Bingbot` | Microsoft | Powers Copilot answers via the Bing index |
+| `PerplexityBot` | Perplexity | Search index |
+| `Perplexity-User` | Perplexity | Live fetch on user request; may not follow robots.txt |
+| `Google-Extended` | Google | Control token: use in Gemini training and grounding (not a crawler) |
+| `Applebot` | Apple | Search crawler (Siri, Spotlight) |
+| `Applebot-Extended` | Apple | Control token: use in Apple's AI training (not a crawler) |
+| `Bingbot` | Microsoft | Bing index, which Copilot answers draw on |
+| `Meta-ExternalAgent` | Meta | Crawling for training |
+| `Amazonbot` | Amazon | Crawling for Alexa and search |
+| `Bytespider` | ByteDance | Crawling for training; often reported not to follow robots.txt |
 | `CCBot` | Common Crawl | Dataset many models train on |
+| `cohere-ai` | Cohere | Crawling for training |
+| `MistralAI-User` | Mistral | Live fetch on user request |
+
+The list follows the shared bot catalogue of the angeo Magento modules
+(`angeo/module-ai-bots`). Agents that may ignore robots.txt can only be
+stopped at the CDN or firewall: say so instead of reporting a robots.txt
+rule as effective.
 
 **Report, do not moralise.** Blocking training crawlers while allowing live-fetch
 and search agents is a legitimate, deliberate strategy — several publishers do
@@ -49,9 +60,16 @@ exactly this. Flag it as critical only when the user's stated goal is AI
 visibility and the block contradicts it. Otherwise state the configuration and
 let them decide.
 
-**Note on syntax:** per RFC 9309, matching is on the most specific group, and
-user-agent tokens are case-insensitive. A `Disallow: /` under `User-agent: *`
-applies to every agent without its own group.
+**Note on syntax (RFC 9309):** read the file as groups before you judge it.
+- User-agent tokens are case-insensitive.
+- Several `User-agent` lines in a row share the rules below them.
+- A `User-agent` line that comes after a rule starts a new group, even without
+  a blank line between them.
+- A crawler follows only the group that names it. The `User-agent: *` group
+  applies only when no group names that crawler — so a named group with
+  `Allow: /` lets that crawler into paths the `*` group blocks.
+- A UTF-8 byte order mark at the start of the file is not part of the first
+  line; do not let it hide the first group.
 
 ### 1.3 Live-fetch agents blocked
 **Severity: critical when AI visibility is the goal.** Blocking `ChatGPT-User`,
@@ -87,6 +105,12 @@ llmstxt.org structure.
 **Fail (important):** absent.
 **Fix:** publish `/llms.txt` — a curated markdown map of the pages an assistant
 should read, with a one-line description per link.
+
+**Page links (informational).** llms.txt v2 (August 2026) also has pages point
+to their machine-readable versions: `<link rel="alternate" type="text/markdown">`
+for a markdown copy and `rel="describedby"` for the llms.txt. The collector
+lists them under `head.agent_links`; the HTTP `Link` header can carry the same.
+Report present or absent — never as a failure on its own.
 
 Be accurate about status: llms.txt is a community proposal, not a standard, and
 no major AI vendor has publicly confirmed consuming it. Recommend it as low-cost
@@ -182,16 +206,31 @@ Presence only — the collector does not perform a protocol handshake, so do not
 report an endpoint as "working". Report it as "present" or "absent" and say that
 functional verification was out of scope.
 
-- `/.well-known/mcp.json` — Model Context Protocol server discovery
-- `/.well-known/ucp` — UCP merchant profile (Google Universal Commerce Protocol)
+- `/.well-known/ucp` — UCP merchant profile (Universal Commerce Protocol).
+  Note the `version` it declares and whether it has a signing-key set (`keys`);
+  do not judge conformance beyond that.
+- `/.well-known/ai-catalog.json` — AI Catalog (draft specification, version
+  1.0). A domain lists its AI artifacts here. It is valid JSON with
+  `specVersion` and `entries`; each entry has `identifier`, `type` and one of
+  `url` or `data`. An MCP server appears as type
+  `application/mcp-server-card+json` with the URL of its Server Card, usually
+  `<MCP endpoint URL>/server-card` (SEP-2127). A page can also point to the
+  catalog with `rel="ai-catalog"` in a `<link>` tag or the `Link` header.
+- `/.well-known/mcp/server-card.json` — the older Server Card form (with
+  `serverInfo` and `capabilities`) that some scanners still check. The current
+  specification calls this location not recommended, and its fields differ
+  from the current card. Report which form the site uses; do not call the
+  older one wrong if the user's goal is to pass that scanner.
+- `/.well-known/agent-card.json` — A2A agent card.
 
 Hosted commerce platforms may publish some of these for every store on the
 platform, without the merchant doing anything. When one is present, check whether
 the endpoint it advertises points at the merchant's own domain or at a platform
 host — that distinction decides who controls the integration, and it is worth
 stating plainly rather than scoring.
-- `/.well-known/ai-plugin.json` — legacy OpenAI plugin manifest
-- `/.well-known/agent.json` — agent card
+- Legacy paths — report as legacy, not as current: `/.well-known/mcp.json`
+  (early MCP discovery draft), `/.well-known/agent.json` (old A2A path),
+  `/.well-known/ai-plugin.json` (retired OpenAI plugin manifest).
 
 **A 200 is not presence.** Sites with catch-all routing answer 200 with an HTML
 page for paths that don't exist — WordPress does this constantly. Count the
@@ -203,6 +242,13 @@ it as absent, and mention the soft-200 if the user seems to believe otherwise.
 flag it when the user has stated an agentic-commerce goal.
 
 ### 5.2 Content-Usage / licensing signals
-Report the presence of a `Content-Usage` response header or licensing directives
-in robots.txt. These express machine-readable terms for AI use. Informational —
-emerging, not yet widely honoured.
+Report the presence of a `Content-Usage` response header, `Content-Signal` or
+`Content-Usage` lines in robots.txt, or other licensing directives. These
+express machine-readable terms for AI use. Informational — emerging, not yet
+widely honoured.
+
+### 5.3 Deeper protocol checks
+This skill reports presence only. For a live MCP handshake, UCP key
+validation and a score, point the user to a scanner that performs them (for
+example the free scan at angeo.dev, or Cloudflare's isitagentready.com) and
+say that this audit did not.

@@ -24,13 +24,15 @@ Then ask:
 
 ## What it checks
 
-**Crawler access** — robots.txt rules for GPTBot, OAI-SearchBot, ChatGPT-User,
-ClaudeBot, Claude-User, Claude-SearchBot, PerplexityBot, Perplexity-User,
-Google-Extended, Applebot-Extended, Bingbot and CCBot; `X-Robots-Tag` headers.
+**Crawler access** — robots.txt rules, read as RFC 9309 groups, for 18 AI
+crawlers, fetchers and control tokens (GPTBot, OAI-SearchBot, ChatGPT-User,
+ClaudeBot, Claude-SearchBot, Claude-User, PerplexityBot, Perplexity-User,
+Google-Extended, Applebot, Applebot-Extended, Bingbot, Meta-ExternalAgent,
+Amazonbot, Bytespider, CCBot, cohere-ai, MistralAI-User); `X-Robots-Tag` headers.
 
-**Machine-readable content** — `llms.txt`, `llms-full.txt`, XML sitemap (including
-sitemap indexes), and whether the primary content exists in served HTML rather
-than only in JavaScript.
+**Machine-readable content** — `llms.txt`, `llms-full.txt`, page links to
+markdown copies and to llms.txt, XML sitemap (including sitemap indexes), and
+whether the primary content exists in served HTML rather than only in JavaScript.
 
 **Structured data** — JSON-LD validity, entity coverage by page type, and offer
 completeness: `price`, `priceCurrency`, `availability`, GTIN/MPN, return and
@@ -38,9 +40,10 @@ shipping policies.
 
 **Page signals** — canonical, title, meta description, H1 count, `lang`, freshness.
 
-**Agentic endpoints** — presence of `/.well-known/ucp`, `/.well-known/mcp.json`
-and related discovery files, with the served content validated as JSON rather
-than assumed from a 200.
+**Agentic endpoints** — presence of the UCP profile (`/.well-known/ucp`), the
+A2A agent card, the AI Catalog and MCP Server Card locations, and legacy
+discovery files, with the served content validated as JSON rather than assumed
+from a 200.
 
 ## What it does not do
 
@@ -55,7 +58,9 @@ Stated plainly, because an audit that overclaims is worth less than none:
   Perplexity knows how those systems select sources. This reports what is
   verifiable: access, presence, validity, completeness.
 - **Presence, not protocol conformance.** A `.well-known` endpoint is reported as
-  present or absent. No handshake is performed.
+  present or absent. No handshake is performed. For a live MCP handshake, UCP
+  key checks and a score, use a scanner that does them (the free scan at
+  [angeo.dev](https://angeo.dev/ai-magento-audit/) or Cloudflare's isitagentready.com).
 - **No content quality analysis.** Answer structure, topical coverage and entity
   consistency are out of scope for 0.1.
 
@@ -73,6 +78,16 @@ and fixed:
 - soft 200s — catch-all routing serving the app shell for `/llms.txt`,
   `/ai.txt` and every `.well-known` path
 - silently truncated bodies reported as complete file sizes
+
+## Tests
+
+```
+python3 -m unittest discover -s tests -v
+```
+
+The collector runs against a local fake site with catch-all routing; no
+network is needed. CI also runs `claude plugin validate` on the marketplace
+and the plugin.
 
 ## Requirements
 

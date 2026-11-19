@@ -20,16 +20,20 @@ import urllib.error
 import urllib.request
 from urllib.parse import urljoin, urlparse
 
-UA = "Mozilla/5.0 (compatible; aeo-audit/0.1; +https://angeo.dev/)"
+UA = "Mozilla/5.0 (compatible; aeo-audit/0.2; +https://angeo.dev/)"
 TIMEOUT = 20
 MAX_BODY = 400_000
 
+# Discovery paths, current first. Legacy paths stay so an old setup is still
+# recognised and can be reported as legacy rather than as missing.
 WELL_KNOWN = [
-    "/.well-known/mcp.json",
-    "/.well-known/ucp",
-    "/.well-known/ucp.json",
-    "/.well-known/ai-plugin.json",
-    "/.well-known/agent.json",
+    "/.well-known/ucp",                      # UCP merchant profile
+    "/.well-known/ai-catalog.json",          # AI Catalog: lists MCP Server Cards (SEP-2127)
+    "/.well-known/mcp/server-card.json",     # MCP Server Card, path used by some scanners
+    "/.well-known/mcp.json",                 # legacy MCP discovery draft
+    "/.well-known/agent-card.json",          # A2A agent card
+    "/.well-known/agent.json",               # legacy A2A agent card path
+    "/.well-known/ai-plugin.json",           # retired OpenAI plugin manifest
     "/.well-known/security.txt",
 ]
 
@@ -187,6 +191,29 @@ def visible_text(html):
     return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", without_code)).strip()
 
 
+def agent_links(html):
+    """<link> tags that point agents at machine-readable versions of the page.
+
+    rel="alternate" with type text/markdown (a markdown copy) and
+    rel="describedby" (for example the site's llms.txt), and rel="ai-catalog"
+    (the site's AI Catalog). The same relations
+    can also come in an HTTP Link header; the homepage headers carry that.
+    """
+    found = []
+    for m in re.finditer(r"<link\b([^>]*)>", html, re.IGNORECASE):
+        attrs = m.group(1)
+        rel = re.search(r'rel\s*=\s*["\']([^"\']+)["\']', attrs, re.IGNORECASE)
+        href = re.search(r'href\s*=\s*["\']([^"\']+)["\']', attrs, re.IGNORECASE)
+        typ = re.search(r'type\s*=\s*["\']([^"\']+)["\']', attrs, re.IGNORECASE)
+        if not rel or not href:
+            continue
+        rels = rel.group(1).lower().split()
+        mime = typ.group(1).lower() if typ else None
+        if "describedby" in rels or "ai-catalog" in rels or ("alternate" in rels and mime and "markdown" in mime):
+            found.append({"rel": " ".join(rels), "type": mime, "href": href.group(1).strip()})
+    return found
+
+
 def head_signals(html):
     """Signals that live in the document head."""
     title = re.search(r"<title[^>]*>(.*?)</title>", html, re.IGNORECASE | re.DOTALL)
@@ -200,6 +227,7 @@ def head_signals(html):
         "generator": _tag_attr(html, "meta", "name", "generator", "content"),
         "lang": lang.group(1) if lang else None,
         "h1_count": len(re.findall(r"<h1[\s>]", html, re.IGNORECASE)),
+        "agent_links": agent_links(html),
         "visible_text_chars": len(visible_text(html)),
     }
 

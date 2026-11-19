@@ -1,6 +1,6 @@
 ---
 name: aeo-audit
-description: Audit a website for AI Engine Optimization (AEO) — whether AI assistants and their crawlers can reach, parse, and cite it. Checks robots.txt AI-bot rules, llms.txt, JSON-LD structured data, sitemaps, canonical/meta signals, and .well-known endpoints, then reports findings by severity with concrete fixes. Use this whenever the user asks about AI search visibility, ChatGPT/Claude/Perplexity citations, AI crawler access, llms.txt, robots.txt bot rules, schema markup, structured data, "why doesn't AI mention my site", agentic commerce readiness, or asks to audit or review a site or URL for AI or LLM discoverability — even if they don't say "AEO".
+description: Audit a website for Answer Engine Optimization (AEO) — whether AI assistants and their crawlers can reach, parse, and cite it. Checks robots.txt AI-bot rules, llms.txt, JSON-LD structured data, sitemaps, canonical/meta signals, and .well-known endpoints, then reports findings by severity with concrete fixes. Use this whenever the user asks about AI search visibility, ChatGPT/Claude/Perplexity citations, AI crawler access, llms.txt, robots.txt bot rules, schema markup, structured data, "why doesn't AI mention my site", agentic commerce readiness, or asks to audit or review a site or URL for AI or LLM discoverability — even if they don't say "AEO".
 ---
 
 # AEO Audit
@@ -33,7 +33,7 @@ Run the bundled collector, which fetches everything in one pass and prints JSON:
 python3 scripts/fetch_signals.py https://example.com
 ```
 
-It returns status codes, headers, and bodies for `/robots.txt`, `/llms.txt`, `/sitemap.xml`, the homepage, and common `.well-known` paths, plus every JSON-LD block found in the homepage HTML. Read its output rather than fetching each URL by hand — it handles timeouts, redirects, and encoding consistently, and its failures are explicit.
+It returns status codes, headers, and bodies for `/robots.txt`, `/llms.txt`, `/sitemap.xml`, the homepage, and the agentic discovery paths (`/.well-known/ucp`, the A2A agent card, the AI Catalog and MCP Server Card locations), plus every JSON-LD block and the `<link>` relations found in the homepage HTML. Read its output rather than fetching each URL by hand — it handles timeouts, redirects, and encoding consistently, and its failures are explicit.
 
 If the script cannot run (no Python, no network egress), fall back to fetching the same URLs with whatever tool is available, and say in the report that collection was manual.
 

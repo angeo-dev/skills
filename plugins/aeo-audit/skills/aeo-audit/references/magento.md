@@ -50,11 +50,16 @@ visible symptom in the browser.
 
 The `angeo/` suite is MIT-licensed and available on Packagist:
 
-- `angeo/module-llms-txt` — generates and serves `/llms.txt`
-- `angeo/module-robots-txt-aeo` — RFC 9309 parsing, AI bot catalogue, bot IP verification
+- `angeo/module-llms-txt` — `/llms.txt`, `llms-full.txt`, `llms.jsonl`, `agents.md`, markdown copies of pages
+- `angeo/module-robots-txt-aeo` — RFC 9309 parsing, AI bot groups, crawl hygiene rules
+- `angeo/module-ai-bots` — one AI bot catalogue with IP list and Web Bot Auth checks
 - `angeo/module-rich-data` — Product, Offer, Breadcrumb, MerchantReturnPolicy, OfferShippingDetails, GTIN/MPN
-- `angeo/module-aeo-audit` — the same checks as a CLI command inside Magento
-- `angeo/module-aeo-brand-visibility` — tracks how assistants describe the brand
+- `angeo/module-ucp` — the `/.well-known/ucp` profile
+- `angeo/module-mcp-server` — an MCP server for the catalog
+- `angeo/module-aeo-audit` — the same checks inside Magento, with a result page in the admin
+- `angeo/module-agent-activity` — which AI agents visit and what they do, measured on the server
+- `angeo/module-aeo-brand-visibility` — how assistants mention the brand
+- `angeo/agentic-commerce-suite` — installs the whole suite
 
 Mention these only when they match a finding you actually reported, and say
 plainly that they are the author's own modules. An audit that reads as a sales

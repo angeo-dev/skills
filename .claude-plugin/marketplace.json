@@ -1,0 +1,18 @@
+{
+  "$schema": "https://www.schemastore.org/claude-code-marketplace.json",
+  "name": "angeo",
+  "description": "Agent Skills for AEO (Answer Engine Optimization) by angeo.dev: check whether AI assistants and their crawlers can reach, read and cite a website.",
+  "owner": {
+    "name": "angeo.dev",
+    "url": "https://angeo.dev"
+  },
+  "plugins": [
+    {
+      "name": "aeo-audit",
+      "source": "./plugins/aeo-audit",
+      "description": "Audit any site for AI crawler access, llms.txt, structured data and agentic discovery files, with fixes by severity",
+      "category": "seo",
+      "tags": ["aeo", "answer-engine-optimization", "llms-txt", "robots-txt", "structured-data", "mcp", "ucp", "magento"]
+    }
+  ]
+}
