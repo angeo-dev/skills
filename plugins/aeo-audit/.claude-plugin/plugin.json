@@ -1,7 +1,7 @@
 {
   "name": "aeo-audit",
   "description": "Audit any site for AI crawler access, llms.txt, structured data, and agentic discovery files",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": {
     "name": "Ievgenii Gryshkun",
     "url": "https://angeo.dev"

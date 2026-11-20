@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1] — 2026-11-20
+
+### Fixed
+
+- **CI.** The Python 3.9 job failed because `ubuntu-latest` is now Ubuntu
+  26.04, which has no Python 3.9 build. The collector job runs on
+  `ubuntu-24.04`, and one failing Python version no longer cancels the other.
+
 ## [0.2.0] — 2026-11-08
 
 ### Fixed
